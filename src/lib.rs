@@ -73,10 +73,10 @@ pub fn state_machine(input: TokenStream) -> TokenStream {
                 mut query: Query<&mut #enum_name, With<#struct_name>>,
                 mut commands: Commands,
             ) {
-                let Ok(mut state_machine_enum) = query.get_mut(trigger.entity()) else {
+                let Ok(mut state_machine_enum) = query.get_mut(trigger.target()) else {
                     return;
                 };
-                let mut c = commands.entity(trigger.entity());
+                let mut c = commands.entity(trigger.target());
                 let state = &trigger.0;
                 match *state_machine_enum {
                     #(#remove_other_states)*,
@@ -112,7 +112,7 @@ pub fn state_machine(input: TokenStream) -> TokenStream {
             trigger: Trigger<OnAdd, #struct_name>,
             mut commands: Commands,
         ) {
-            let entity = trigger.entity();
+            let entity = trigger.target();
         
             commands.entity(entity).insert(#enum_name::default());
             commands.entity(entity).insert(#first_state_ident::default());

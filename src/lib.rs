@@ -126,7 +126,8 @@ pub fn state_machine(input: TokenStream) -> TokenStream {
             fn build(&self, app: &mut App) {
                 app
                     #(#add_systems)*
-                    .add_observer(#enum_system_name);
+                    .add_observer(#enum_system_name)
+                    .register_type::<#enum_name>();
             }
         }
     };

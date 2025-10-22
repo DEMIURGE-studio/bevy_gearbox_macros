@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput};
+use syn::{parse_macro_input, DeriveInput, Item};
 
 /// Derive macro for simple events that don't need phase-specific payloads.
 /// 
@@ -45,7 +45,35 @@ pub fn derive_simple_transition(input: TokenStream) -> TokenStream {
             fn to_effect_event(&self) -> Option<Self::EffectEvent> { None }
             fn to_entry_event(&self) -> Option<Self::EntryEvent> { None }
         }
+
+        impl bevy_gearbox::transitions::RegisteredTransitionEvent for #name {}
+
+        bevy_gearbox::inventory::submit! {
+            bevy_gearbox::transitions::TransitionInstaller { install: bevy_gearbox::transitions::register_transition::<#name> }
+        }
     };
     
+    TokenStream::from(expanded)
+}
+
+/// Apply to the event type definition. It implements the marker and submits an installer.
+#[proc_macro_attribute]
+pub fn register_transition(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let parsed: Item = syn::parse(item.clone()).expect("#[register_transition] must be applied to a type item");
+    let name = match &parsed {
+        Item::Struct(s) => &s.ident,
+        Item::Enum(e) => &e.ident,
+        _ => panic!("#[register_transition] supports only structs or enums"),
+    };
+
+    let expanded = quote! {
+        #parsed
+
+        impl bevy_gearbox::transitions::RegisteredTransitionEvent for #name {}
+
+        bevy_gearbox::inventory::submit! {
+            bevy_gearbox::transitions::TransitionInstaller { install: bevy_gearbox::transitions::install_transition::<#name> }
+        }
+    };
     TokenStream::from(expanded)
 }

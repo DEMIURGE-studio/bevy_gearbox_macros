@@ -72,7 +72,7 @@ pub fn register_transition(_attr: TokenStream, item: TokenStream) -> TokenStream
         impl bevy_gearbox::transitions::RegisteredTransitionEvent for #name {}
 
         bevy_gearbox::inventory::submit! {
-            bevy_gearbox::transitions::TransitionInstaller { install: bevy_gearbox::transitions::install_transition::<#name> }
+            bevy_gearbox::transitions::TransitionInstaller { install: bevy_gearbox::transitions::register_transition::<#name> }
         }
     };
     TokenStream::from(expanded)
